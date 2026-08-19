@@ -3,118 +3,378 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>팀 제조실적 관리 시스템</title>
+    <title>팀 제조실적 & 주간 순위 관리</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>body { font-family: sans-serif; background-color: #0f172a; color: #f1f5f9; }</style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
-<body class="p-4 md:p-8">
-    <div class="max-w-6xl mx-auto space-y-6">
-        <!-- 상단 헤더 -->
-        <div class="flex flex-col md:flex-row justify-between items-center bg-slate-900 p-6 rounded-2xl border border-slate-800">
-            <div>
-                <h1 class="text-xl font-bold text-white">팀 제조실적 관리</h1>
-                <p class="text-sm text-slate-400">마약 생산 데이터 기록 시스템</p>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+
+    <!-- 상단 헤더 -->
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-emerald-600 text-white p-2.5 rounded-xl shadow-lg shadow-emerald-900/40">
+                    <i class="fa-solid fa-industry text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-white">팀 제조실적 & 주간 순위 관리</h1>
+                    <p class="text-xs text-slate-400">대마 · 코카 · LSD 생산 리포트</p>
+                </div>
             </div>
-            <div class="flex gap-2 mt-4 md:mt-0">
-                <button onclick="showTab('entry')" class="px-4 py-2 bg-emerald-600 rounded-lg text-sm font-bold">제조량 입력</button>
-                <button onclick="showTab('ranking')" class="px-4 py-2 bg-slate-800 rounded-lg text-sm font-bold">주간 순위</button>
-                <button onclick="showTab('members')" class="px-4 py-2 bg-slate-800 rounded-lg text-sm font-bold">팀원 관리</button>
+
+            <!-- 상단 탭 네비게이션 -->
+            <div class="flex bg-slate-800 p-1 rounded-xl border border-slate-700">
+                <button onclick="switchTab('entry')" id="tabBtn-entry" class="px-4 py-2 rounded-lg text-sm font-medium transition-all bg-emerald-600 text-white shadow">
+                    <i class="fa-solid fa-pen-to-square mr-1.5"></i> 제조량 입력
+                </button>
+                <button onclick="switchTab('ranking')" id="tabBtn-ranking" class="px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-trophy mr-1.5"></i> 주간 순위 (1~5위)
+                </button>
+                <button onclick="switchTab('members')" id="tabBtn-members" class="px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-users mr-1.5"></i> 팀원 관리
+                </button>
             </div>
         </div>
+    </header>
 
-        <!-- 탭 내용 -->
-        <div id="contentArea" class="bg-slate-900 p-6 rounded-2xl border border-slate-800">
-            <!-- 기본 탭: 제조량 입력 -->
-            <div id="tab-entry" class="space-y-4">
-                <h2 class="font-bold text-lg">기록할 기간 선택 (2026년)</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label class="text-xs text-slate-400">시작일</label>
-                        <input type="date" id="startDate" min="2026-01-01" max="2026-12-31" class="w-full bg-slate-800 p-2 rounded border border-slate-700">
-                    </div>
-                    <div>
-                        <label class="text-xs text-slate-400">종료일</label>
-                        <input type="date" id="endDate" min="2026-01-01" max="2026-12-31" class="w-full bg-slate-800 p-2 rounded border border-slate-700">
-                    </div>
-                    <button onclick="initPeriod()" class="bg-blue-600 hover:bg-blue-500 rounded-lg font-bold">기간 설정 완료</button>
+    <!-- 메인 컨테이너 -->
+    <main class="max-w-7xl mx-auto px-4 py-8 flex-grow w-full space-y-6">
+
+        <!-- 1. 제조량 입력 탭 -->
+        <div id="tab-entry" class="space-y-6">
+            <div class="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 backdrop-blur flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                <div>
+                    <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-days text-emerald-500"></i> 2026년 주간 기간 선택 및 제조량 기록
+                    </h2>
+                    <p class="text-sm text-slate-400 mt-1">기록할 날짜 범위를 선택하고 팀원별 생산 수량을 입력하세요. (입력 즉시 자동 저장)</p>
                 </div>
-                <div id="tableContainer" class="overflow-x-auto mt-4">
+                <div class="flex flex-wrap items-center gap-2 bg-slate-950 p-3 rounded-xl border border-slate-800">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xs text-slate-400">시작일:</span>
+                        <input type="date" id="filterStart" min="2026-01-01" max="2026-12-31" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white">
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xs text-slate-400">종료일:</span>
+                        <input type="date" id="filterEnd" min="2026-01-01" max="2026-12-31" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white">
+                    </div>
+                    <button onclick="applyPeriod()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow">
+                        기간 적용
+                    </button>
+                </div>
+            </div>
+
+            <!-- 현재 선택된 기간 표시 배너 -->
+            <div id="currentPeriodBanner" class="bg-emerald-950/30 border border-emerald-500/30 px-5 py-3 rounded-xl text-emerald-300 text-sm font-medium flex items-center gap-2">
+                <i class="fa-solid fa-circle-info"></i> 현재 선택된 기록 기간: <span id="periodText" class="font-bold underline">기간을 설정해주세요</span>
+            </div>
+
+            <!-- 테이블 영역 -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
-                        <thead class="text-slate-400 text-xs uppercase border-b border-slate-700">
-                            <tr><th class="p-3">닉네임</th><th class="p-3">대마</th><th class="p-3">코카</th><th class="p-3">LSD</th></tr>
+                        <thead>
+                            <tr class="bg-slate-800/80 text-slate-300 text-xs uppercase tracking-wider border-b border-slate-700">
+                                <th class="py-4 px-6 font-semibold">팀원 닉네임</th>
+                                <th class="py-4 px-6 font-semibold"><span class="text-emerald-400"><i class="fa-solid fa-seedling mr-1"></i> 대마 (개)</span></th>
+                                <th class="py-4 px-6 font-semibold"><span class="text-amber-400"><i class="fa-solid fa-cube mr-1"></i> 코카 (개)</span></th>
+                                <th class="py-4 px-6 font-semibold"><span class="text-purple-400"><i class="fa-solid fa-flask mr-1"></i> LSD (개)</span></th>
+                                <th class="py-4 px-6 font-semibold text-right">합계</th>
+                            </tr>
                         </thead>
-                        <tbody id="memberRows"></tbody>
+                        <tbody id="productionTableBody" class="divide-y divide-slate-800/60 text-sm">
+                            <!-- 동적 생성 -->
+                        </tbody>
                     </table>
                 </div>
             </div>
+        </div>
 
-            <!-- 팀원 관리 탭 -->
-            <div id="tab-members" class="hidden space-y-4">
-                <div class="flex justify-between items-center">
-                    <h2 id="memberCountText" class="font-bold text-lg">팀원 명단 (총 0명)</h2>
-                    <div class="flex gap-2">
-                        <input type="text" id="newMemberName" placeholder="닉네임" class="bg-slate-800 p-2 rounded border border-slate-700">
-                        <button onclick="addMember()" class="bg-emerald-600 px-4 py-2 rounded font-bold">추가</button>
-                    </div>
+        <!-- 2. 주간 순위 탭 -->
+        <div id="tab-ranking" class="space-y-6 hidden">
+            <div class="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 backdrop-blur flex justify-between items-center">
+                <div>
+                    <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-trophy text-amber-400"></i> 주간 생산 순위 (1 ~ 5위)
+                    </h2>
+                    <p id="rankingPeriodTitle" class="text-sm text-slate-400 mt-1">선택된 기간의 마약 제조 실적 TOP 5 팀원입니다.</p>
                 </div>
-                <ul id="memberList" class="space-y-2"></ul>
             </div>
-            
-            <!-- 순위 탭 -->
-            <div id="tab-ranking" class="hidden">
-                <h2 class="font-bold text-lg mb-4">주간 생산 순위</h2>
-                <div id="rankingList" class="space-y-2"></div>
+
+            <div id="podiumContainer" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <!-- 동적 1~5등 카드 -->
             </div>
         </div>
-    </div>
 
+        <!-- 3. 팀원 관리 탭 -->
+        <div id="tab-members" class="space-y-6 hidden">
+            <div class="bg-slate-900/60 p-6 rounded-2xl border border-slate-800 backdrop-blur flex flex-col md:flex-row justify-between items-center gap-4">
+                <h2 id="memberTabTitle" class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-users text-blue-400"></i> 팀원 명단 관리 (총 0명)
+                </h2>
+                <div class="flex gap-2 w-full md:w-auto">
+                    <input type="text" id="newMemberName" placeholder="새 팀원 닉네임 입력" class="bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow md:w-64">
+                    <button onclick="addMember()" class="bg-blue-600 hover:bg-blue-500 text-white font-medium px-4 py-2 rounded-xl text-sm transition-all shadow shrink-0">
+                        <i class="fa-solid fa-user-plus mr-1"></i> 추가
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+                <div id="memberListContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <!-- 동적 팀원 카드 -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 스크립트 로직 -->
     <script>
-        let db = JSON.parse(localStorage.getItem('cartelData')) || { members: [], records: {} };
+        let db = JSON.parse(localStorage.getItem('cartelTrackerDB')) || {
+            members: [],
+            currentStart: '2026-08-01',
+            currentEnd: '2026-08-07',
+            records: {} // { "2026-08-01_2026-08-07": { memberId: {weed, coca, lsd} } }
+        };
 
-        function updateUI() {
-            // 팀원 관리 탭 업데이트
-            document.getElementById('memberCountText').innerText = `팀원 명단 (총 ${db.members.length}명)`;
-            const list = document.getElementById('memberList');
-            list.innerHTML = db.members.map(m => `
-                <li class="bg-slate-800 p-3 rounded flex justify-between">
-                    ${m} <button onclick="removeMember('${m}')" class="text-red-400">삭제</button>
-                </li>`).join('');
-            
-            // 제조량 입력 테이블 업데이트
-            const rows = document.getElementById('memberRows');
-            rows.innerHTML = db.members.map(m => `
-                <tr class="border-b border-slate-800">
-                    <td class="p-3">${m}</td>
-                    <td><input type="number" class="w-16 bg-slate-800 p-1 rounded"></td>
-                    <td><input type="number" class="w-16 bg-slate-800 p-1 rounded"></td>
-                    <td><input type="number" class="w-16 bg-slate-800 p-1 rounded"></td>
-                </tr>`).join('');
+        let currentTab = 'entry';
+
+        function saveData() {
+            localStorage.setItem('cartelTrackerDB', JSON.stringify(db));
         }
 
-        function addMember() {
-            const name = document.getElementById('newMemberName').value;
-            if (name && !db.members.includes(name)) {
-                db.members.push(name);
-                save(); updateUI();
+        function switchTab(tab) {
+            currentTab = tab;
+            ['entry', 'ranking', 'members'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`tabBtn-${t}`).className = "px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white";
+            });
+            document.getElementById(`tab-${tab}`).classList.remove('hidden');
+            
+            const activeBtn = document.getElementById(`tabBtn-${tab}`);
+            if (tab === 'entry') activeBtn.className = "px-4 py-2 rounded-lg text-sm font-medium transition-all bg-emerald-600 text-white shadow";
+            if (tab === 'ranking') {
+                activeBtn.className = "px-4 py-2 rounded-lg text-sm font-medium transition-all bg-amber-600 text-white shadow";
+                renderRanking();
+            }
+            if (tab === 'members') {
+                activeBtn.className = "px-4 py-2 rounded-lg text-sm font-medium transition-all bg-blue-600 text-white shadow";
+                renderMembers();
             }
         }
 
-        function removeMember(name) {
-            db.members = db.members.filter(m => m !== name);
-            save(); updateUI();
+        function getPeriodKey() {
+            return `${db.currentStart}_${db.currentEnd}`;
         }
 
-        function save() { localStorage.setItem('cartelData', JSON.stringify(db)); }
-        
-        function showTab(tab) {
-            document.getElementById('tab-entry').classList.add('hidden');
-            document.getElementById('tab-ranking').classList.add('hidden');
-            document.getElementById('tab-members').classList.add('hidden');
-            document.getElementById(`tab-${tab}`).classList.remove('hidden');
+        function applyPeriod() {
+            const start = document.getElementById('filterStart').value;
+            const end = document.getElementById('filterEnd').value;
+            if (!start || !end) {
+                alert('시작일과 종료일을 모두 선택해주세요.');
+                return;
+            }
+            if (start > end) {
+                alert('시작일이 종료일보다 클 수 없습니다.');
+                return;
+            }
+            db.currentStart = start;
+            db.currentEnd = end;
+            saveData();
+            updatePeriodBanner();
+            renderProductionTable();
         }
 
-        updateUI();
+        function updatePeriodBanner() {
+            document.getElementById('filterStart').value = db.currentStart;
+            document.getElementById('filterEnd').value = db.currentEnd;
+            document.getElementById('periodTextinnerText', '').innerText = `${db.currentStart} ~ ${db.currentEnd}`;
+            document.getElementById('periodText').innerText = `${db.currentStart} ~ ${db.currentEnd}`;
+        }
+
+        // 1. 제조량 입력 테이블 렌더링
+        function renderProductionTable() {
+            updatePeriodBanner();
+            const tbody = document.getElementById('productionTableBody');
+            tbody.innerHTML = '';
+
+            if (db.members.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-12 text-center text-slate-500">등록된 팀원이 없습니다. 상단의 '팀원 관리' 탭에서 팀원을 먼저 추가해주세요.</td></tr>`;
+                return;
+            }
+
+            const pKey = getPeriodKey();
+            if (!db.records[pKey]) db.records[pKey] = {};
+
+            db.members.forEach(member => {
+                if (!db.records[pKey][member.id]) {
+                    db.records[pKey][member.id] = { weed: 0, coca: 0, lsd: 0 };
+                }
+                const rec = db.records[pKey][member.id];
+                const total = (Number(rec.weed) || 0) + (Number(rec.coca) || 0) + (Number(rec.lsd) || 0);
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-800/40 transition-colors border-b border-slate-800/40";
+                tr.innerHTML = `
+                    <td class="py-3.5 px-6 font-medium text-white flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-300 border border-slate-700">${member.name.substring(0,2)}</div>
+                        ${member.name}
+                    </td>
+                    <td class="py-3.5 px-6">
+                        <input type="number" min="0" value="${rec.weed}" onchange="updateRecord('${member.id}', 'weed', this.value)" class="w-24 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-white text-sm focus:ring-2 focus:ring-emerald-500">
+                    </td>
+                    <td class="py-3.5 px-6">
+                        <input type="number" min="0" value="${rec.coca}" onchange="updateRecord('${member.id}', 'coca', this.value)" class="w-24 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-white text-sm focus:ring-2 focus:ring-amber-500">
+                    </td>
+                    <td class="py-3.5 px-6">
+                        <input type="number" min="0" value="${rec.lsd}" onchange="updateRecord('${member.id}', 'lsd', this.value)" class="w-24 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-white text-sm focus:ring-2 focus:ring-purple-500">
+                    </td>
+                    <td class="py-3.5 px-6 text-right font-bold text-emerald-400" id="total-${member.id}">
+                        ${total.toLocaleString()} 개
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateRecord(memberId, type, val) {
+            const pKey = getPeriodKey();
+            if (!db.records[pKey]) db.records[pKey] = {};
+            if (!db.records[pKey][memberId]) db.records[pKey][memberId] = { weed: 0, coca: 0, lsd: 0 };
+            
+            db.records[pKey][memberId][type] = Math.max(0, Number(val) || 0);
+            saveData();
+
+            const rec = db.records[pKey][memberId];
+            const total = rec.weed + rec.coca + rec.lsd;
+            document.getElementById(`total-${memberId}`).innerText = `${total.toLocaleString()} 개`;
+        }
+
+        // 2. 주간 순위 탭 (1~5위)
+        function renderRanking() {
+            const pKey = getPeriodKey();
+            document.getElementById('rankingPeriodTitle').innerText = `[${db.currentStart} ~ ${db.currentEnd}] 기간 생산 실적 TOP 5 팀원입니다.`;
+
+            const container = document.getElementById('podiumContainer');
+            container.innerHTML = '';
+
+            if (!db.records[pKey] || db.members.length === 0) {
+                container.innerHTML = `<div class="col-span-5 text-center py-12 text-slate-500">선택된 기간에 기록된 데이터가 없습니다.</div>`;
+                return;
+            }
+
+            let rankedList = db.members.map(member => {
+                const rec = db.records[pKey][member.id] || { weed: 0, coca: 0, lsd: 0 };
+                const total = rec.weed + rec.coca + rec.lsd;
+                return { ...member, rec, total };
+            });
+
+            rankedList.sort((a, b) => b.total - a.total);
+            const top5 = rankedList.slice(0, 5);
+
+            const medals = [
+                { color: 'border-amber-500 bg-amber-500/10 text-amber-400', icon: 'fa-crown text-amber-400' },
+                { color: 'border-slate-300 bg-slate-300/10 text-slate-200', icon: 'fa-medal text-slate-300' },
+                { color: 'border-amber-700 bg-amber-700/10 text-amber-600', icon: 'fa-award text-amber-600' },
+                { color: 'border-slate-700 bg-slate-800/50 text-slate-400', icon: 'fa-star text-slate-500' },
+                { color: 'border-slate-700 bg-slate-800/50 text-slate-400', icon: 'fa-star text-slate-500' }
+            ];
+
+            top5.forEach((item, idx) => {
+                const m = medals[idx];
+                const card = document.createElement('div');
+                card.className = `border ${m.color} rounded-2xl p-5 flex flex-col justify-between items-center text-center space-y-3 backdrop-blur shadow-lg`;
+                card.innerHTML = `
+                    <div class="w-full flex justify-between items-center">
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-300">${idx + 1}위</span>
+                        <i class="fa-solid ${m.icon} text-lg"></i>
+                    </div>
+                    <div class="my-2">
+                        <div class="w-14 h-14 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-lg font-bold text-white mx-auto mb-2 shadow-inner">
+                            ${item.name.substring(0,2)}
+                        </div>
+                        <h3 class="font-bold text-white text-base">${item.name}</h3>
+                    </div>
+                    <div class="w-full bg-slate-950/60 rounded-xl p-3 border border-slate-800 space-y-1.5 text-xs">
+                        <div class="flex justify-between text-slate-400"><span>대마</span><span class="text-emerald-400 font-semibold">${item.rec.weed}개</span></div>
+                        <div class="flex justify-between text-slate-400"><span>코카</span><span class="text-amber-400 font-semibold">${item.rec.coca}개</span></div>
+                        <div class="flex justify-between text-slate-400"><span>LSD</span><span class="text-purple-400 font-semibold">${item.rec.lsd}개</span></div>
+                        <div class="border-t border-slate-800 pt-1.5 flex justify-between font-bold text-white">
+                            <span>총합</span><span class="text-emerald-400">${item.total.toLocaleString()}개</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            if (top5.length === 0 || top5[0].total === 0) {
+                container.innerHTML = `<div class="col-span-5 text-center py-12 text-slate-500">해당 기간에 집계된 제조량이 없습니다.</div>`;
+            }
+        }
+
+        // 3. 팀원 관리 탭
+        function renderMembers() {
+            const container = document.getElementById('memberListContainer');
+            container.innerHTML = '';
+
+            document.getElementById('memberTabTitle').innerHTML = `<i class="fa-solid fa-users text-blue-400"></i> 팀원 명단 관리 (총 ${db.members.length}명)`;
+
+            if (db.members.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500">등록된 팀원이 없습니다. 위 입력창에서 팀원을 추가해주세요.</div>`;
+                return;
+            }
+
+            db.members.forEach(member => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-950 border border-slate-800 rounded-xl p-4 flex items-center justify-between";
+                card.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-full bg-blue-600/20 text-blue-400 font-bold flex items-center justify-center text-xs border border-blue-500/30">
+                            ${member.name.substring(0,2)}
+                        </div>
+                        <span class="font-medium text-white text-sm">${member.name}</span>
+                    </div>
+                    <button onclick="deleteMember('${member.id}')" class="text-slate-500 hover:text-red-400 p-1.5 transition-colors">
+                        <i class="fa-solid fa-trash-can text-sm"></i>
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function addMember() {
+            const input = document.getElementById('newMemberName');
+            const name = input.value.trim();
+            if (!name) {
+                alert('팀원 이름을 입력해주세요.');
+                return;
+            }
+            if (db.members.some(m => m.name === name)) {
+                alert('이미 등록된 팀원 이름입니다.');
+                return;
+            }
+
+            db.members.push({ id: 'm_' + Date.now(), name });
+            saveData();
+            input.value = '';
+            renderMembers();
+            renderProductionTable();
+        }
+
+        function deleteMember(id) {
+            if (confirm('정말 이 팀원을 삭제하시겠습니까?')) {
+                db.members = db.members.filter(m => m.id !== id);
+                saveData();
+                renderMembers();
+                renderProductionTable();
+            }
+        }
+
+        // 최초 실행
+        renderProductionTable();
     </script>
 </body>
 </html>
